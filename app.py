@@ -1,11 +1,20 @@
 from flask import Flask, jsonify,request
 import time
 app = Flask(__name__);
-@app.route("/bot")
+@app.route("/bot/",methods=['POST'])
 def response():
-#     query = dict(request.form)['query']
-#     res = query + " " + time.ctime()
-#     return jsonify({"response" : res})
-      return "<h1>Welcome to Geeks for Geeks</h1>"
+    param = request.form.get('name')
+    print(param)
+    # You can add the test cases you made in the previous function, but in our case here you are just testing the POST functionality
+    if param:
+        return jsonify({
+            "Message": f"Welcome {name} to our awesome platform!!",
+            # Add this option to distinct the POST request
+            "METHOD" : "POST"
+        })
+    else:
+        return jsonify({
+            "ERROR": "no name found, please send a name."
+        })
 if __name__=="__main__":
-    app.run()
+    app.run(threaded=True,port=5000)
