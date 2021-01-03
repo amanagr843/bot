@@ -5,9 +5,9 @@ import requests
 app = Flask(__name__)
 
 
-@app.route('/api/v1/',methods=['POST'])
+@app.route('/api/v1/',methods=['GET'])
 def API():
-    if request.method == 'POST':
+    if request.method == 'GET':
         uri = 'https://www.brainyquote.com'
         query = str(request.args['query'])
         print(query)
