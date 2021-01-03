@@ -1,26 +1,45 @@
-from flask import Flask, jsonify,request
-import time
-<<<<<<< HEAD
+from flask import Flask , request , jsonify
+from bs4 import BeautifulSoup
+import requests
+
 app = Flask(__name__)
-@app.route("/bot", methods=["POST"])
-=======
-app = Flask(__name__);
-@app.route("/bot/",methods=['POST'])
->>>>>>> f932b467917090f453884869dcfa62f099dd4fac
-def response():
-    param = request.form.get('name')
-    print(param)
-    # You can add the test cases you made in the previous function, but in our case here you are just testing the POST functionality
-    if param:
-        return jsonify({
-            "Message": f"Welcome {param} to our awesome platform!!",
-            # Add this option to distinct the POST request
-            "METHOD" : "POST"
-        })
-    else:
-        return jsonify({
-            "ERROR": "no name found, please send a name."
-        })
-if __name__=="__main__":
-    app.debug = True
+
+
+@app.route('/api/v1/',methods=['POST'])
+def API():
+    if request.method == 'POST':
+        uri = 'https://www.brainyquote.com'
+        query = str(request.args['query'])
+        print(query)
+        if " " in query:
+            query = str(query).replace(" ","+")
+        else:
+            pass
+
+        search = '/search_results?q=' + query
+
+        ready_uri = uri + search
+        print(ready_uri)
+        content = requests.get(ready_uri).content
+        soup = BeautifulSoup(content, 'html.parser')
+        quotes_links = soup.find_all('a', {'class': 'b-qt'})
+        l = []
+        for i in quotes_links[:5]:
+            d = {}
+            quote_url = uri + i.get('href')
+            quote_content = requests.get(quote_url).content
+            quote_soup = BeautifulSoup(quote_content, 'html.parser')
+            d['quote'] = quote_soup.find('p', {'class': 'b-qt'}).text
+            d['author'] = quote_soup.find('p', {'class': 'bq_fq_a'}).text
+            l.append(d)
+
+
+        return jsonify(l)
+
+
+
+
+
+
+if __name__ == '__main__':
     app.run()
