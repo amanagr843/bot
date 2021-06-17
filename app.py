@@ -1,45 +1,55 @@
-from flask import Flask , request , jsonify
-from bs4 import BeautifulSoup
-import requests
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
+import time
+from flask import Flask
+from flask_restful import Resource, Api, reqparse
+import pandas as pd
+import ast
 app = Flask(__name__)
+from selenium.webdriver.chrome.options import Options
 
 
-@app.route('/api/v1/',methods=['GET'])
-def API():
-    if request.method == 'GET':
-        uri = 'https://www.brainyquote.com'
-        query = str(request.args['query'])
-        print(query)
-        if " " in query:
-            query = str(query).replace(" ","+")
-        else:
-            pass
+ans = []
+cu = ['USDT','BNB','BTC','ETH']
 
-        search = '/search_results?q=' + query
+class Bot():
+    def scrap(self):
+        options = Options()
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox")
+        options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+        self.browser = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"),chrome_options=options)
+        self.browser.set_window_size(1024, 600)
+        self.browser.maximize_window()
+        for c in cu:
+            self.browser.get("https://p2p.binance.com/en/trade/buy/{}".format(c))
+            time.sleep(4)
+            if(c == 'USDT'):
+                self.browser.find_element_by_xpath('//main/div[4]/div/div/div[2]/div[2]/div').click()
+       
+                k = self.browser.find_element_by_xpath('//main/div[4]/div/div/div[2]/div[2]/div[3]/div/div/input')
+                k.send_keys("INR")
+                k.send_keys(Keys.ENTER)
+                time.sleep(3)
+            temp = []
+            for i in range(4):
+                t = {}
+                t["name"] = self.browser.find_element_by_xpath('//main/div[5]/div/div[2]/div[{}]/div/div/div/div/a'.format(i+1)).text
+                t["price"] = self.browser.find_element_by_xpath('//main/div[5]/div/div[2]/div[{}]/div/div[2]/div/div/div'.format(i+1)).text
+                temp.append(t)
+            f = {}
+            f[c] = temp
+            ans.append(f)
+           
+        print(ans)
 
-        ready_uri = uri + search
-        print(ready_uri)
-        content = requests.get(ready_uri).content
-        soup = BeautifulSoup(content, 'html.parser')
-        quotes_links = soup.find_all('a', {'class': 'b-qt'})
-        l = []
-        for i in quotes_links[:5]:
-            d = {}
-            quote_url = uri + i.get('href')
-            quote_content = requests.get(quote_url).content
-            quote_soup = BeautifulSoup(quote_content, 'html.parser')
-            d['quote'] = quote_soup.find('p', {'class': 'b-qt'}).text
-            d['author'] = quote_soup.find('p', {'class': 'bq_fq_a'}).text
-            l.append(d)
-
-
-        return jsonify(l)
-
-
-
-
-
-
-if __name__ == '__main__':
-    app.run()
+@app.route('/api',methods=['GET'])
+def all():
+    b = Bot()
+    b.scrap()
+    return {1:ans}
+if __name__ == "__main__":
+    app.run(port=8000)
