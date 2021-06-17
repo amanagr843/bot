@@ -34,8 +34,11 @@ class Bot():
             temp = []
             for i in range(4):
                 t = {}
-                t["name"] = self.browser.find_element_by_xpath('//main/div[5]/div/div[2]/div[{}]/div/div/div/div/a'.format(i+1)).text
-                t["price"] = self.browser.find_element_by_xpath('//main/div[5]/div/div[2]/div[{}]/div/div[2]/div/div/div'.format(i+1)).text
+                try:
+                    t["name"] = self.browser.find_element_by_xpath('//main/div[5]/div/div[2]/div[{}]/div/div/div/div/a'.format(i+1)).text
+                    t["price"] = self.browser.find_element_by_xpath('//main/div[5]/div/div[2]/div[{}]/div/div[2]/div/div/div'.format(i+1)).text
+                except:
+                    pass
                 temp.append(t)
             f = {}
             f[c] = temp
