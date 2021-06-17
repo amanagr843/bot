@@ -4,8 +4,6 @@ from selenium.webdriver.common.keys import Keys
 import time
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
-import pandas as pd
-import ast
 app = Flask(__name__)
 from selenium.webdriver.chrome.options import Options
 
@@ -20,7 +18,6 @@ class Bot():
         options.add_argument('--disable-gpu')
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--no-sandbox")
-        options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
         self.browser = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"),chrome_options=options)
         self.browser.set_window_size(1024, 600)
         self.browser.maximize_window()
@@ -52,4 +49,4 @@ def all():
     b.scrap()
     return {1:ans}
 if __name__ == "__main__":
-    app.run(port=8000)
+    app.run()
